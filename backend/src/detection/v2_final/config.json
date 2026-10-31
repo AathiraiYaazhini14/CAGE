@@ -1,0 +1,12 @@
+{
+  "candidate_key": "b",
+  "candidate_name": "Candidate G: Ablated Stacker [heur, class]",
+  "t_isolate": 0.9,
+  "t_block": 0.945,
+  "dev_fpr_isolate": 0.0444,
+  "dev_fpr_block": 0.0,
+  "test_fpr_isolate": 0.0429,
+  "test_fpr_block": 0.0,
+  "test_rec_isolate": 0.681,
+  "test_rec_block": 0.5333
+}

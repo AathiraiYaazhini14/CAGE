@@ -1,0 +1,405 @@
+{
+  "summary": {
+    "g": {
+      "name": "Candidate G (Prev Selected B)",
+      "test_fpr": 0.0429,
+      "holdout_rec": 0.4378,
+      "stress_rec_200": 0.2222,
+      "dev_f1": 0.8395
+    },
+    "e": {
+      "name": "Candidate E (Heur_v2 >= 0.30 OR Class >= t_hi)",
+      "test_fpr": 0.3381,
+      "holdout_rec": 0.8434,
+      "stress_rec_200": 0.9111,
+      "dev_f1": 0.7919
+    },
+    "f": {
+      "name": "Candidate F (Heur_v2 >= 0.30 OR Class >= t_hi OR [Class >= t_mid & WeakCue])",
+      "test_fpr": 0.3381,
+      "holdout_rec": 0.8434,
+      "stress_rec_200": 0.9111,
+      "dev_f1": 0.7919
+    }
+  },
+  "winner": "g",
+  "verdict": "Selected Candidate G (Prev Selected B) among qualifying candidates with highest 200w Stress Recall (0.2222) and Test FPR (0.0429 <= 5%).",
+  "task1_fpr": {
+    "v1_doc_fpr": 0.3111,
+    "v2_doc_fpr": 0.2333,
+    "v1_unit_fpr": 0.3111,
+    "v2_unit_fpr": 0.3111
+  },
+  "dataset_metrics": {
+    "g": {
+      "dev": {
+        "total": 180,
+        "tp": 68,
+        "fp": 4,
+        "tn": 86,
+        "fn": 22,
+        "accuracy": 0.8556,
+        "precision": 0.9444,
+        "recall": 0.7556,
+        "f1": 0.8395,
+        "fpr": 0.0444
+      },
+      "test": {
+        "total": 420,
+        "tp": 143,
+        "fp": 9,
+        "tn": 201,
+        "fn": 67,
+        "accuracy": 0.819,
+        "precision": 0.9408,
+        "recall": 0.681,
+        "f1": 0.7901,
+        "fpr": 0.0429
+      },
+      "holdout": {
+        "total": 499,
+        "tp": 109,
+        "fp": 0,
+        "tn": 250,
+        "fn": 140,
+        "accuracy": 0.7194,
+        "precision": 1.0,
+        "recall": 0.4378,
+        "f1": 0.6089,
+        "fpr": 0.0
+      }
+    },
+    "e": {
+      "dev": {
+        "total": 180,
+        "tp": 78,
+        "fp": 29,
+        "tn": 61,
+        "fn": 12,
+        "accuracy": 0.7722,
+        "precision": 0.729,
+        "recall": 0.8667,
+        "f1": 0.7919,
+        "fpr": 0.3222
+      },
+      "test": {
+        "total": 420,
+        "tp": 167,
+        "fp": 71,
+        "tn": 139,
+        "fn": 43,
+        "accuracy": 0.7286,
+        "precision": 0.7017,
+        "recall": 0.7952,
+        "f1": 0.7455,
+        "fpr": 0.3381
+      },
+      "holdout": {
+        "total": 499,
+        "tp": 210,
+        "fp": 0,
+        "tn": 250,
+        "fn": 39,
+        "accuracy": 0.9218,
+        "precision": 1.0,
+        "recall": 0.8434,
+        "f1": 0.915,
+        "fpr": 0.0
+      }
+    },
+    "f": {
+      "dev": {
+        "total": 180,
+        "tp": 78,
+        "fp": 29,
+        "tn": 61,
+        "fn": 12,
+        "accuracy": 0.7722,
+        "precision": 0.729,
+        "recall": 0.8667,
+        "f1": 0.7919,
+        "fpr": 0.3222
+      },
+      "test": {
+        "total": 420,
+        "tp": 167,
+        "fp": 71,
+        "tn": 139,
+        "fn": 43,
+        "accuracy": 0.7286,
+        "precision": 0.7017,
+        "recall": 0.7952,
+        "f1": 0.7455,
+        "fpr": 0.3381
+      },
+      "holdout": {
+        "total": 499,
+        "tp": 210,
+        "fp": 0,
+        "tn": 250,
+        "fn": 39,
+        "accuracy": 0.9218,
+        "precision": 1.0,
+        "recall": 0.8434,
+        "f1": 0.915,
+        "fpr": 0.0
+      }
+    }
+  },
+  "stress_results": {
+    "g": {
+      "50": {
+        "overall_recall": 0.1111,
+        "synthetic_recall": 0.2222,
+        "public_recall": 0.0,
+        "benign_fpr": 0.0,
+        "positions": {
+          "start": {
+            "recall_all": 0.1,
+            "recall_synth": 0.2,
+            "recall_pub": 0.0,
+            "benign_fpr": 0.0
+          },
+          "middle": {
+            "recall_all": 0.1,
+            "recall_synth": 0.2,
+            "recall_pub": 0.0,
+            "benign_fpr": 0.0
+          },
+          "end": {
+            "recall_all": 0.1333,
+            "recall_synth": 0.2667,
+            "recall_pub": 0.0,
+            "benign_fpr": 0.0
+          }
+        }
+      },
+      "200": {
+        "overall_recall": 0.2222,
+        "synthetic_recall": 0.4,
+        "public_recall": 0.0444,
+        "benign_fpr": 0.0222,
+        "positions": {
+          "start": {
+            "recall_all": 0.1667,
+            "recall_synth": 0.3333,
+            "recall_pub": 0.0,
+            "benign_fpr": 0.0333
+          },
+          "middle": {
+            "recall_all": 0.3,
+            "recall_synth": 0.4667,
+            "recall_pub": 0.1333,
+            "benign_fpr": 0.0333
+          },
+          "end": {
+            "recall_all": 0.2,
+            "recall_synth": 0.4,
+            "recall_pub": 0.0,
+            "benign_fpr": 0.0
+          }
+        }
+      },
+      "500": {
+        "overall_recall": 0.1889,
+        "synthetic_recall": 0.3556,
+        "public_recall": 0.0222,
+        "benign_fpr": 0.0,
+        "positions": {
+          "start": {
+            "recall_all": 0.1,
+            "recall_synth": 0.2,
+            "recall_pub": 0.0,
+            "benign_fpr": 0.0
+          },
+          "middle": {
+            "recall_all": 0.2333,
+            "recall_synth": 0.4,
+            "recall_pub": 0.0667,
+            "benign_fpr": 0.0
+          },
+          "end": {
+            "recall_all": 0.2333,
+            "recall_synth": 0.4667,
+            "recall_pub": 0.0,
+            "benign_fpr": 0.0
+          }
+        }
+      }
+    },
+    "e": {
+      "50": {
+        "overall_recall": 0.7889,
+        "synthetic_recall": 1.0,
+        "public_recall": 0.5778,
+        "benign_fpr": 0.2,
+        "positions": {
+          "start": {
+            "recall_all": 0.7667,
+            "recall_synth": 1.0,
+            "recall_pub": 0.5333,
+            "benign_fpr": 0.2
+          },
+          "middle": {
+            "recall_all": 0.8,
+            "recall_synth": 1.0,
+            "recall_pub": 0.6,
+            "benign_fpr": 0.2
+          },
+          "end": {
+            "recall_all": 0.8,
+            "recall_synth": 1.0,
+            "recall_pub": 0.6,
+            "benign_fpr": 0.2
+          }
+        }
+      },
+      "200": {
+        "overall_recall": 0.9111,
+        "synthetic_recall": 1.0,
+        "public_recall": 0.8222,
+        "benign_fpr": 0.6778,
+        "positions": {
+          "start": {
+            "recall_all": 0.8667,
+            "recall_synth": 1.0,
+            "recall_pub": 0.7333,
+            "benign_fpr": 0.7
+          },
+          "middle": {
+            "recall_all": 0.9333,
+            "recall_synth": 1.0,
+            "recall_pub": 0.8667,
+            "benign_fpr": 0.6667
+          },
+          "end": {
+            "recall_all": 0.9333,
+            "recall_synth": 1.0,
+            "recall_pub": 0.8667,
+            "benign_fpr": 0.6667
+          }
+        }
+      },
+      "500": {
+        "overall_recall": 0.9111,
+        "synthetic_recall": 1.0,
+        "public_recall": 0.8222,
+        "benign_fpr": 0.9111,
+        "positions": {
+          "start": {
+            "recall_all": 0.8667,
+            "recall_synth": 1.0,
+            "recall_pub": 0.7333,
+            "benign_fpr": 0.9333
+          },
+          "middle": {
+            "recall_all": 0.9333,
+            "recall_synth": 1.0,
+            "recall_pub": 0.8667,
+            "benign_fpr": 0.9
+          },
+          "end": {
+            "recall_all": 0.9333,
+            "recall_synth": 1.0,
+            "recall_pub": 0.8667,
+            "benign_fpr": 0.9
+          }
+        }
+      }
+    },
+    "f": {
+      "50": {
+        "overall_recall": 0.7889,
+        "synthetic_recall": 1.0,
+        "public_recall": 0.5778,
+        "benign_fpr": 0.2,
+        "positions": {
+          "start": {
+            "recall_all": 0.7667,
+            "recall_synth": 1.0,
+            "recall_pub": 0.5333,
+            "benign_fpr": 0.2
+          },
+          "middle": {
+            "recall_all": 0.8,
+            "recall_synth": 1.0,
+            "recall_pub": 0.6,
+            "benign_fpr": 0.2
+          },
+          "end": {
+            "recall_all": 0.8,
+            "recall_synth": 1.0,
+            "recall_pub": 0.6,
+            "benign_fpr": 0.2
+          }
+        }
+      },
+      "200": {
+        "overall_recall": 0.9111,
+        "synthetic_recall": 1.0,
+        "public_recall": 0.8222,
+        "benign_fpr": 0.6778,
+        "positions": {
+          "start": {
+            "recall_all": 0.8667,
+            "recall_synth": 1.0,
+            "recall_pub": 0.7333,
+            "benign_fpr": 0.7
+          },
+          "middle": {
+            "recall_all": 0.9333,
+            "recall_synth": 1.0,
+            "recall_pub": 0.8667,
+            "benign_fpr": 0.6667
+          },
+          "end": {
+            "recall_all": 0.9333,
+            "recall_synth": 1.0,
+            "recall_pub": 0.8667,
+            "benign_fpr": 0.6667
+          }
+        }
+      },
+      "500": {
+        "overall_recall": 0.9111,
+        "synthetic_recall": 1.0,
+        "public_recall": 0.8222,
+        "benign_fpr": 0.9111,
+        "positions": {
+          "start": {
+            "recall_all": 0.8667,
+            "recall_synth": 1.0,
+            "recall_pub": 0.7333,
+            "benign_fpr": 0.9333
+          },
+          "middle": {
+            "recall_all": 0.9333,
+            "recall_synth": 1.0,
+            "recall_pub": 0.8667,
+            "benign_fpr": 0.9
+          },
+          "end": {
+            "recall_all": 0.9333,
+            "recall_synth": 1.0,
+            "recall_pub": 0.8667,
+            "benign_fpr": 0.9
+          }
+        }
+      }
+    }
+  },
+  "thresholds": {
+    "g": {
+      "t": 0.9,
+      "t_isolate": 0.9,
+      "t_block": 0.945
+    },
+    "e": {
+      "t_hi": 0.9000000000000004
+    },
+    "f": {
+      "t_hi": 0.9,
+      "t_mid": 0.8499999999999999
+    }
+  }
+}

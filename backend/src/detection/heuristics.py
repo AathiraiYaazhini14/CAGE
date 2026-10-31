@@ -80,6 +80,7 @@ def detect(text: str) -> DetectionResult:
     cleaned_text = text.lower()
     matched_groups = set()
     matched_details = []
+    first_match_pos = float('inf')
     first_attack_type = None
 
     for group_name, group_data in PATTERN_GROUPS.items():
@@ -90,7 +91,8 @@ def detect(text: str) -> DetectionResult:
             match = re.search(pattern, cleaned_text, re.IGNORECASE)
             if match:
                 matched_groups.add(group_name)
-                if first_attack_type is None:
+                if match.start() < first_match_pos:
+                    first_match_pos = match.start()
                     first_attack_type = group_name
 
                 matched_details.append({

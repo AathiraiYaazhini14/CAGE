@@ -1,0 +1,315 @@
+{
+  "candidate_names": {
+    "a": "Candidate A: Full Fusion B [all features]",
+    "b": "Candidate B: Ablated Stacker [heur, class]",
+    "c": "Candidate C: Max-Chunk Classifier Only"
+  },
+  "dev_optimal_thresholds": {
+    "a": 0.88,
+    "b": 0.9,
+    "c": 0.95
+  },
+  "dataset_eval_results": {
+    "a": {
+      "threshold": 0.88,
+      "dev": {
+        "total": 180,
+        "tp": 78,
+        "fp": 3,
+        "tn": 87,
+        "fn": 12,
+        "accuracy": 0.9167,
+        "precision": 0.963,
+        "recall": 0.8667,
+        "f1": 0.9123,
+        "fpr": 0.0333
+      },
+      "test": {
+        "total": 420,
+        "tp": 171,
+        "fp": 4,
+        "tn": 206,
+        "fn": 39,
+        "accuracy": 0.8976,
+        "precision": 0.9771,
+        "recall": 0.8143,
+        "f1": 0.8883,
+        "fpr": 0.019
+      },
+      "holdout": {
+        "total": 499,
+        "tp": 154,
+        "fp": 10,
+        "tn": 240,
+        "fn": 95,
+        "accuracy": 0.7896,
+        "precision": 0.939,
+        "recall": 0.6185,
+        "f1": 0.7458,
+        "fpr": 0.04
+      }
+    },
+    "b": {
+      "threshold": 0.9,
+      "dev": {
+        "total": 180,
+        "tp": 68,
+        "fp": 4,
+        "tn": 86,
+        "fn": 22,
+        "accuracy": 0.8556,
+        "precision": 0.9444,
+        "recall": 0.7556,
+        "f1": 0.8395,
+        "fpr": 0.0444
+      },
+      "test": {
+        "total": 420,
+        "tp": 143,
+        "fp": 9,
+        "tn": 201,
+        "fn": 67,
+        "accuracy": 0.819,
+        "precision": 0.9408,
+        "recall": 0.681,
+        "f1": 0.7901,
+        "fpr": 0.0429
+      },
+      "holdout": {
+        "total": 499,
+        "tp": 109,
+        "fp": 0,
+        "tn": 250,
+        "fn": 140,
+        "accuracy": 0.7194,
+        "precision": 1.0,
+        "recall": 0.4378,
+        "f1": 0.6089,
+        "fpr": 0.0
+      }
+    },
+    "c": {
+      "threshold": 0.95,
+      "dev": {
+        "total": 180,
+        "tp": 68,
+        "fp": 4,
+        "tn": 86,
+        "fn": 22,
+        "accuracy": 0.8556,
+        "precision": 0.9444,
+        "recall": 0.7556,
+        "f1": 0.8395,
+        "fpr": 0.0444
+      },
+      "test": {
+        "total": 420,
+        "tp": 144,
+        "fp": 9,
+        "tn": 201,
+        "fn": 66,
+        "accuracy": 0.8214,
+        "precision": 0.9412,
+        "recall": 0.6857,
+        "f1": 0.7934,
+        "fpr": 0.0429
+      },
+      "holdout": {
+        "total": 499,
+        "tp": 116,
+        "fp": 0,
+        "tn": 250,
+        "fn": 133,
+        "accuracy": 0.7335,
+        "precision": 1.0,
+        "recall": 0.4659,
+        "f1": 0.6356,
+        "fpr": 0.0
+      }
+    }
+  },
+  "stress_results": {
+    "a": {
+      "50": {
+        "positions": {
+          "start": {
+            "recall": 0.28,
+            "fpr": 0.0
+          },
+          "middle": {
+            "recall": 0.34,
+            "fpr": 0.0
+          },
+          "end": {
+            "recall": 0.38,
+            "fpr": 0.0
+          }
+        },
+        "mean_recall": 0.3333,
+        "mean_fpr": 0.0
+      },
+      "200": {
+        "positions": {
+          "start": {
+            "recall": 0.06,
+            "fpr": 0.0
+          },
+          "middle": {
+            "recall": 0.12,
+            "fpr": 0.0
+          },
+          "end": {
+            "recall": 0.24,
+            "fpr": 0.0
+          }
+        },
+        "mean_recall": 0.14,
+        "mean_fpr": 0.0
+      },
+      "500": {
+        "positions": {
+          "start": {
+            "recall": 0.0,
+            "fpr": 0.0
+          },
+          "middle": {
+            "recall": 0.0,
+            "fpr": 0.0
+          },
+          "end": {
+            "recall": 0.0,
+            "fpr": 0.0
+          }
+        },
+        "mean_recall": 0.0,
+        "mean_fpr": 0.0
+      }
+    },
+    "b": {
+      "50": {
+        "positions": {
+          "start": {
+            "recall": 0.12,
+            "fpr": 0.0
+          },
+          "middle": {
+            "recall": 0.18,
+            "fpr": 0.0
+          },
+          "end": {
+            "recall": 0.16,
+            "fpr": 0.0
+          }
+        },
+        "mean_recall": 0.1533,
+        "mean_fpr": 0.0
+      },
+      "200": {
+        "positions": {
+          "start": {
+            "recall": 0.14,
+            "fpr": 0.02
+          },
+          "middle": {
+            "recall": 0.24,
+            "fpr": 0.02
+          },
+          "end": {
+            "recall": 0.32,
+            "fpr": 0.0
+          }
+        },
+        "mean_recall": 0.2333,
+        "mean_fpr": 0.0133
+      },
+      "500": {
+        "positions": {
+          "start": {
+            "recall": 0.14,
+            "fpr": 0.0
+          },
+          "middle": {
+            "recall": 0.24,
+            "fpr": 0.0
+          },
+          "end": {
+            "recall": 0.28,
+            "fpr": 0.0
+          }
+        },
+        "mean_recall": 0.22,
+        "mean_fpr": 0.0
+      }
+    },
+    "c": {
+      "50": {
+        "positions": {
+          "start": {
+            "recall": 0.14,
+            "fpr": 0.0
+          },
+          "middle": {
+            "recall": 0.2,
+            "fpr": 0.0
+          },
+          "end": {
+            "recall": 0.18,
+            "fpr": 0.0
+          }
+        },
+        "mean_recall": 0.1733,
+        "mean_fpr": 0.0
+      },
+      "200": {
+        "positions": {
+          "start": {
+            "recall": 0.14,
+            "fpr": 0.02
+          },
+          "middle": {
+            "recall": 0.24,
+            "fpr": 0.02
+          },
+          "end": {
+            "recall": 0.32,
+            "fpr": 0.0
+          }
+        },
+        "mean_recall": 0.2333,
+        "mean_fpr": 0.0133
+      },
+      "500": {
+        "positions": {
+          "start": {
+            "recall": 0.14,
+            "fpr": 0.0
+          },
+          "middle": {
+            "recall": 0.24,
+            "fpr": 0.0
+          },
+          "end": {
+            "recall": 0.28,
+            "fpr": 0.0
+          }
+        },
+        "mean_recall": 0.22,
+        "mean_fpr": 0.0
+      }
+    }
+  },
+  "selection_verdict": "No candidate satisfied both Test FPR <= 5% and Stress Recall >= 50% at 200-word padding. Per protocol, selected Candidate B: Ablated Stacker [heur, class] based on highest 200-word Stress Recall (0.2333).",
+  "chosen_candidate": "b",
+  "tier_config": {
+    "candidate_key": "b",
+    "candidate_name": "Candidate B: Ablated Stacker [heur, class]",
+    "t_isolate": 0.9,
+    "t_block": 0.945,
+    "dev_fpr_isolate": 0.0444,
+    "dev_fpr_block": 0.0,
+    "test_fpr_isolate": 0.0429,
+    "test_fpr_block": 0.0,
+    "test_rec_isolate": 0.681,
+    "test_rec_block": 0.5333
+  }
+}
