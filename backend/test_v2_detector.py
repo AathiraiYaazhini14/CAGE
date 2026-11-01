@@ -18,6 +18,7 @@ from fastapi.testclient import TestClient
 
 # Ensure default detector is v2_final
 os.environ["CAGE_DETECTOR"] = "v2_final"
+os.environ["CAGE_AUTH_REQUIRED"] = "false"
 
 from src.main import app
 from src.detection.v2_final.scan import scan as v2_scan

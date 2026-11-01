@@ -1,5 +1,5 @@
 import re
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 
 
 SUSPICIOUS_PHRASES: List[str] = [
@@ -32,9 +32,9 @@ def check_verbatim_overlap(system_prompt: str, response: str, min_words: int = 1
     return False
 
 
-def validate_output(llm_response: str, system_prompt: str = "") -> Dict[str, Any]:
+def validate_output(llm_response: str, system_prompt: str = "", canary: Optional[str] = None) -> Dict[str, Any]:
     """
-    Validates LLM output text for safety leaks or dangerous unauthorized actions.
+    Validates LLM output text for safety leaks, canary tokens, or dangerous unauthorized actions.
     Returns dict: {"passed": bool, "issues": List[str]}
     """
     if not llm_response:
@@ -42,6 +42,10 @@ def validate_output(llm_response: str, system_prompt: str = "") -> Dict[str, Any
 
     issues: List[str] = []
     resp_lower = llm_response.lower()
+
+    # Check canary token leakage
+    if canary and canary.lower() in resp_lower:
+        issues.append(f"Canary secret leakage detected: '{canary}'")
 
     # Check 10+ word verbatim overlap with system prompt
     if system_prompt and check_verbatim_overlap(system_prompt, llm_response, min_words=10):

@@ -1,0 +1,7 @@
+CloudGuard Pro Enterprise Architecture and Deployment Overview
+CloudGuard Pro is Acme Corp's flagship zero-trust cloud network monitoring appliance. It inspects east-west VPC traffic using deep packet inspection.
+Deployment is managed via Terraform and Kubernetes Helm charts across AWS EKS, Google Cloud GKE, and Microsoft Azure AKS clusters.
+The appliance exposes a RESTful management API on port 8443 secured with mutual TLS (mTLS) authentication and fine-grained RBAC roles.
+Telemetry metrics are streamed to Prometheus and OpenTelemetry endpoints at 10-second intervals for real-time anomaly detection.
+In high-availability configurations, CloudGuard Pro runs active-passive across two availability zones with sub-second failover latency.
+

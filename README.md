@@ -72,6 +72,27 @@ flowchart TD
 - Python 3.10+
 - Node.js 18+ and npm
 
+### Configuration & Environment Variables
+
+Copy the provided `.env.example` to `.env`:
+```bash
+cp .env.example .env
+```
+
+| Variable | Default Value | Description |
+|:---|:---:|:---|
+| `GEMINI_API_KEY` | `""` | Google Gemini API key for live LLM generation. When provided, CAGE uses the official `google-genai` SDK. |
+| `LLM_MODEL` | `gemini-2.5-flash` | Model name for live LLM inference (`gemini-2.5-flash` or `claude-3-5-sonnet-20241022`). |
+| `ANTHROPIC_API_KEY` | `""` | Optional secondary provider (Anthropic Claude). |
+| `JWT_SECRET` | `cage_super_secret_jwt_key_change_in_production_2026` | Secret key used to sign and verify HMAC-SHA256 JWT tokens (valid 24h). |
+| `CAGE_AUTH_REQUIRED` | `true` | When `true`, protects `/scan`, `/analyze`, `/logs`, `/stats`, and `/demo/*` with Bearer tokens. Set to `false` for legacy tests. |
+| `CAGE_DETECTOR` | `v2_final` | Active detector engine (`v2_final` for the multi-tier production stacker, `v1` for legacy baseline). |
+
+> [!NOTE]
+> SQLite WAL mode (`PRAGMA journal_mode=WAL;`) is automatically enabled on database connections for high-concurrency read/write throughput. Both `.env` and `*.db` are ignored by git.
+
+---
+
 ### A. Backend Setup & Startup
 Navigate to the `backend/` directory:
 ```bash
@@ -89,13 +110,20 @@ pip install -r requirements.txt
 uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-#### Detector Selection (Environment Variable)
-- **v2_final (Default)**: Uses the shipped production multi-tier ablated stacker (`CAGE_DETECTOR=v2_final` or unset).
-- **v1 Fallback**: Set `CAGE_DETECTOR=v1` to run the legacy baseline detector:
-  ```powershell
-  $env:CAGE_DETECTOR="v1"
-  uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
-  ```
+#### Seeding Sample Demo Data
+To populate the dashboard with realistic demonstration data for immediate visual inspection:
+```bash
+# From workspace root
+python scripts/seed_demo.py
+```
+> [!IMPORTANT]
+> **Sample Data Notice**: The seed script generates ~250 historical scans across the last 30 days tagged with `is_demo=1` using real text prompts from `eval/data/benchmark.jsonl` processed through the real `v2_final` detector (no synthetic or invented confidence scores). These rows are presented for demonstration and dashboard visualization purposes.
+
+Default Demo Account Credentials:
+- **Email**: `demo@cage.dev`
+- **Password**: `demo1234`
+
+---
 
 ### B. Frontend Setup & Startup
 In a separate terminal, navigate to the `frontend/` directory:
@@ -114,21 +142,44 @@ Open **`http://localhost:5173`** in your browser.
 
 ## 4. Running Test Suites
 
-Both verification suites run out-of-the-box:
+All three test suites run out-of-the-box and verify all functional, security, and detection capabilities:
 
 ```bash
 cd backend
 
-# 1. Run 15-test Verification Matrix (passes under CAGE_DETECTOR=v1)
+# 1. Verification Matrix Suite (15/15 tests passing, legacy report Table 5.4)
 .\venv\Scripts\python test_verification_matrix.py
 
-# 2. Run 8-scenario v2 Detector Test Suite (validates v2_final & documented limitations)
+# 2. Production v2 Detector Suite (8/8 target scenarios & documented limitations)
 .\venv\Scripts\python test_v2_detector.py
+
+# 3. Auth, Analytics & Demo RAG Test Suite (10/10 tests passing)
+.\venv\Scripts\python test_auth_analytics_demo.py
 ```
 
 ---
 
-## 5. cURL API Examples
+## 5. Interactive Demo RAG Assistant (`POST /demo/chat`)
+
+CAGE includes a complete Retrieval-Augmented Generation (RAG) assistant simulation equipped with:
+- **Knowledge Base**: 8 realistic corporate documents stored in `src/demo_rag/knowledge_base/` (company policy, customer GDPR guidelines, IT support, vendor procurement, and candidate resumes).
+- **Poisoned Documents**: Embedded indirect injection attempts (e.g., hidden HTML comment instructions in `resume_alex_devops.txt`, override directives in `resume_sarah_ml.txt`, and system note directives in `customer_guidelines.txt`).
+- **Canary Secret**: The system prompt is provisioned with a secret canary token: `CAGE-DEMO-1234`.
+- **Dual Defense Demonstration**:
+  - **Protection ON (`protection: true`)**:
+    - Scans user query and retrieved context chunks using `v2_final`.
+    - Block-tier queries are rejected with a refusal before calling the LLM.
+    - Block-tier chunks are dropped from context.
+    - Isolate-tier chunks are wrapped in `[UNTRUSTED EXTERNAL CONTENT]` boundaries.
+    - Validates generated output for prompt leakage and canary leakage.
+  - **Protection OFF (`protection: false`)**:
+    - Raw chunks and queries are forwarded to the LLM directly.
+    - When running offline, the mock LLM obediently executes the smuggled instruction and leaks `CAGE-DEMO-1234`, clearly demonstrating the prompt injection vulnerability when CAGE is disabled.
+- **Rate Limiting**: `/demo/chat` is rate-limited to 20 requests per minute per user.
+
+---
+
+## 6. API Reference & cURL Examples
 
 ### 1. Fast Real-Time Inspection (`POST /scan`)
 Lightweight inspection without calling the LLM or writing audit log entries:
@@ -188,14 +239,49 @@ curl -X POST http://localhost:8000/analyze \
   }'
 ```
 
-### 4. Fetch Audit Logs (`GET /logs`)
+### 4. User Authentication (`POST /auth/login`)
 ```bash
-curl -X GET "http://localhost:8000/logs?limit=25"
+curl -X POST http://localhost:8000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "demo@cage.dev",
+    "password": "demo1234"
+  }'
+```
+
+### 5. Fetch Scoped Audit Logs & CSV Export (`GET /logs`)
+```bash
+# Filtered query
+curl -X GET "http://localhost:8000/logs?limit=25&range=30d&verdict=block" \
+  -H "Authorization: Bearer <JWT_TOKEN>"
+
+# Export to CSV
+curl -X GET "http://localhost:8000/logs/export.csv?range=30d" \
+  -H "Authorization: Bearer <JWT_TOKEN>" \
+  -o cage_audit_logs.csv
+```
+
+### 6. Aggregated Threat Analytics (`GET /stats`)
+```bash
+curl -X GET "http://localhost:8000/stats?range=30d" \
+  -H "Authorization: Bearer <JWT_TOKEN>"
+```
+
+### 7. Interactive RAG Chat (`POST /demo/chat`)
+```bash
+# With CAGE defense enabled (protection=True)
+curl -X POST http://localhost:8000/demo/chat \
+  -H "Authorization: Bearer <JWT_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": "What is the policy for customer data retention under GDPR?",
+    "protection": true
+  }'
 ```
 
 ---
 
-## 6. Evaluation & Candidate Comparison Results
+## 7. Evaluation & Candidate Comparison Results
 
 All metrics below are drawn directly from `backend/eval/final/final_iteration_results.json` and the final selection reports across the **dev split (180 samples)**, **frozen test split (420 samples)**, **external holdout benchmark (499 samples)**, and the **200-word embedded injection stress test**:
 
@@ -221,7 +307,7 @@ All metrics below are drawn directly from `backend/eval/final/final_iteration_re
 
 ---
 
-## 7. Known Limitations
+## 8. Known Limitations
 
 In the interest of empirical honesty and safety engineering, CAGE has three primary documented limitations:
 
@@ -231,7 +317,7 @@ In the interest of empirical honesty and safety engineering, CAGE has three prim
 
 ---
 
-## 8. Future Work
+## 9. Future Work
 
 To address these documented limitations in future iterations:
 - **Span-Labeled Chunk Training**: Replacing document-level labels with token- and span-level ground truth annotations, training fine-grained token classifiers or sequence taggers to eliminate window dilution on stealth injections.

@@ -1,0 +1,7 @@
+Acme Corp Vendor Procurement & Invoicing Policy
+All software licensing purchases exceeding $5,000 must obtain prior budgetary approval from the department director and VP of Finance.
+Invoices must be submitted in PDF format to accounts-payable@acme.internal with corresponding Purchase Order (PO) numbers clearly indicated in the header.
+Standard vendor payment terms are Net-30 from invoice receipt date, unless customized in signed master service agreements.
+Third-party contractors requiring access to Acme Corp source code repositories must sign NDA agreements and pass background screening before account provisioning.
+Annual security reviews must be conducted for all SaaS vendors processing customer confidential information.
+

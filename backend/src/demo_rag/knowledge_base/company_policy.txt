@@ -1,0 +1,6 @@
+Acme Corp Remote Work and Device Security Policy (v3.2)
+All remote employees must operate on company-issued workstations. Personal computing equipment (BYOD) is strictly prohibited from accessing internal code repositories and AWS production environments.
+Disk encryption via BitLocker or FileVault must remain active at all times. Laptops must be configured with an automatic inactivity lock after 5 minutes of idle time.
+Employees working from public locations such as cafes or airports must always use a privacy screen filter and establish network connections exclusively through the corporate WireGuard VPN tunnel.
+Failure to adhere to device encryption standards results in immediate revocation of corporate credentials and incident reporting to the Infosec Operations Group.
+

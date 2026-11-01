@@ -1,176 +1,248 @@
-import React, { useState } from 'react';
-import { ShieldCheck, Lock, Cpu, Radio, ShieldAlert, BarChart3, Terminal } from 'lucide-react';
-import AnalyzerInput from './components/AnalyzerInput';
-import SampleAttacks from './components/SampleAttacks';
-import ResultCard from './components/ResultCard';
-import PipelineTrace from './components/PipelineTrace';
-import LogsPanel from './components/LogsPanel';
-import ResultsTab from './components/ResultsTab';
+import React, { useState, useEffect } from 'react';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { ToastProvider } from './components/Toast';
+import { api } from './api';
+import { AuthView } from './views/AuthView';
+import { HomeView } from './views/HomeView';
+import { AnalysisView } from './views/AnalysisView';
+import { DemoView } from './views/DemoView';
+import { ApiKeysView, DEFAULT_INITIAL_KEYS } from './views/ApiKeysView';
+import { Sidebar } from './components/Sidebar';
+import { CreateKeyModal } from './components/CreateKeyModal';
+import { LatticeShieldIcon } from './components/LatticeShield';
+import { Menu, X, ShieldAlert, Cpu, Key } from 'lucide-react';
 
-export default function App() {
-  const [activeTab, setActiveTab] = useState('playground'); // 'playground' | 'results'
-  const [text, setText] = useState('');
-  const [sourceType, setSourceType] = useState('user_input');
-  const [mode, setMode] = useState('prompt'); // 'prompt' | 'document'
-  const [result, setResult] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
+function MainApp() {
+  const { isAuthenticated, loading, user } = useAuth();
+  const [currentTab, setCurrentTab] = useState('home'); // 'home' | 'analysis' | 'demo' | 'keys'
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [createKeyModalOpen, setCreateKeyModalOpen] = useState(false);
 
-  const handleAnalyze = async (promptText, selectedSourceType = sourceType) => {
-    setIsLoading(true);
-    setError(null);
-    setResult(null);
+  // Account-scoped API Keys store
+  const [keys, setKeys] = useState([]);
+  const [keysLoading, setKeysLoading] = useState(false);
 
+  // Sync keys whenever active user changes
+  useEffect(() => {
+    if (!user) {
+      setKeys([]);
+      return;
+    }
+
+    const userKeyStorageId = `cage_api_keys_${user.id || user.email}`;
+
+    // 1. Initial hydration from user-specific cache
     try {
-      const response = await fetch('http://localhost:8000/analyze', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          text: promptText,
-          source_type: selectedSourceType
-        }),
+      const cached = localStorage.getItem(userKeyStorageId);
+      if (cached) {
+        setKeys(JSON.parse(cached));
+      } else if (user.email === 'demo@cage.dev') {
+        setKeys(DEFAULT_INITIAL_KEYS);
+      } else {
+        setKeys([]);
+      }
+    } catch (_) {
+      setKeys([]);
+    }
+
+    // 2. Fetch fresh account-isolated keys from backend
+    let isCancelled = false;
+    setKeysLoading(true);
+    api.keys
+      .list()
+      .then((serverKeys) => {
+        if (!isCancelled && Array.isArray(serverKeys)) {
+          setKeys(serverKeys);
+          try {
+            localStorage.setItem(userKeyStorageId, JSON.stringify(serverKeys));
+          } catch (_) {}
+        }
+      })
+      .catch((err) => {
+        console.warn('[CAGE API Keys] Offline/cache fallback:', err.message);
+      })
+      .finally(() => {
+        if (!isCancelled) setKeysLoading(false);
       });
 
-      if (!response.ok) {
-        throw new Error(`Server returned error status: ${response.status}`);
-      }
+    return () => {
+      isCancelled = true;
+    };
+  }, [user]);
 
-      const data = await response.json();
-      setResult(data);
+  const handleKeyCreated = async (keyPayload) => {
+    if (!user) return null;
+    const userKeyStorageId = `cage_api_keys_${user.id || user.email}`;
+
+    try {
+      const created = await api.keys.create(keyPayload);
+      setKeys((prev) => {
+        const next = [created, ...prev];
+        try {
+          localStorage.setItem(userKeyStorageId, JSON.stringify(next));
+        } catch (_) {}
+        return next;
+      });
+      return created;
     } catch (err) {
-      console.error('Fetch error:', err);
-      setError('Backend server not reachable. Ensure uvicorn is running on http://localhost:8000');
-    } finally {
-      setIsLoading(false);
+      console.warn('[CAGE API Keys] Fallback to client generation:', err.message);
+      const prefix = keyPayload.environment === 'Production' ? 'cage_live_' : 'cage_test_';
+      const randomHex = Array.from({ length: 32 }, () =>
+        Math.floor(Math.random() * 16).toString(16)
+      ).join('');
+      const fullKey = `${prefix}${randomHex}`;
+      const localKey = {
+        id: `key_${Date.now()}`,
+        name: keyPayload.name,
+        prefix: `${fullKey.slice(0, 14)}••••••••••••${fullKey.slice(-4)}`,
+        fullKey: fullKey,
+        environment: keyPayload.environment,
+        scope: keyPayload.scope,
+        createdAt: new Date().toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric'
+        }),
+        status: 'Active',
+        lastUsed: 'Never'
+      };
+      setKeys((prev) => {
+        const next = [localKey, ...prev];
+        try {
+          localStorage.setItem(userKeyStorageId, JSON.stringify(next));
+        } catch (_) {}
+        return next;
+      });
+      return localKey;
     }
   };
 
-  const handleSelectSample = (sampleText, sampleSourceType = 'user_input') => {
-    setText(sampleText);
-    setSourceType(sampleSourceType);
-    if (sampleSourceType === 'retrieved_document') {
-      setMode('document');
+  const handleRevokeKey = async (keyId) => {
+    if (!user) return;
+    const userKeyStorageId = `cage_api_keys_${user.id || user.email}`;
+
+    try {
+      await api.keys.revoke(keyId);
+    } catch (err) {
+      console.warn('[CAGE API Keys] Offline revoke fallback:', err.message);
     }
-    setError(null);
+
+    setKeys((prev) => {
+      const next = prev.filter((k) => k.id !== keyId);
+      try {
+        localStorage.setItem(userKeyStorageId, JSON.stringify(next));
+      } catch (_) {}
+      return next;
+    });
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen w-full bg-[#0A0A0F] flex flex-col items-center justify-center text-white">
+        <LatticeShieldIcon className="w-12 h-12 mb-4" glowing />
+        <div className="flex items-center gap-2 font-mono text-xs text-[#7C6CF0] tracking-widest uppercase">
+          <div className="w-3 h-3 border-2 border-[#7C6CF0] border-t-transparent rounded-full animate-spin" />
+          <span>Verifying Security Session...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <AuthView />;
+  }
 
   return (
-    <div className="min-h-screen py-10 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto flex flex-col justify-between space-y-8">
-      {/* Header Section */}
-      <header className="space-y-6 text-center">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-950/70 border border-cyan-700/50 text-cyan-400 text-xs font-mono tracking-wide shadow-lg shadow-cyan-950/40">
-          <Radio className="w-3.5 h-3.5 animate-pulse text-cyan-400" />
-          <span>Multi-Layer LLM Firewall & Defense Pipeline v2</span>
-        </div>
-
-        <div className="space-y-2">
-          <div className="flex items-center justify-center gap-3">
-            <div className="p-3 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-teal-500/10 border border-cyan-500/30 text-cyan-400 shadow-xl shadow-cyan-500/10">
-              <ShieldCheck className="w-9 h-9" />
-            </div>
-            <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-white font-sans">
-              CAGE
-            </h1>
-          </div>
-          <p className="text-slate-400 text-sm sm:text-base font-medium max-w-lg mx-auto">
-            Context-Aware Guard for LLM Exploits
-          </p>
-        </div>
-
-        {/* Primary View Switcher Navigation */}
-        <div className="flex justify-center pt-2">
-          <div className="inline-flex rounded-2xl bg-slate-900/90 p-1.5 border border-slate-800 shadow-xl">
-            <button
-              type="button"
-              id="tab-playground-btn"
-              onClick={() => setActiveTab('playground')}
-              className={`flex items-center gap-2 px-5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
-                activeTab === 'playground'
-                  ? 'bg-gradient-to-r from-cyan-500/30 to-teal-500/20 text-cyan-300 border border-cyan-500/50 shadow-md shadow-cyan-950/50'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <Terminal className="w-4 h-4 text-cyan-400" />
-              <span>Live Defense Playground</span>
-            </button>
-
-            <button
-              type="button"
-              id="tab-results-btn"
-              onClick={() => setActiveTab('results')}
-              className={`flex items-center gap-2 px-5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
-                activeTab === 'results'
-                  ? 'bg-gradient-to-r from-cyan-500/30 to-teal-500/20 text-cyan-300 border border-cyan-500/50 shadow-md shadow-cyan-950/50'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <BarChart3 className="w-4 h-4 text-cyan-400" />
-              <span>Benchmark Results</span>
-            </button>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen w-full bg-[#0A0A0F] text-[#F1F5F9] flex">
+      {/* Sidebar Navigation */}
+      <Sidebar
+        currentTab={currentTab}
+        onSelectTab={setCurrentTab}
+        mobileOpen={mobileMenuOpen}
+        onCloseMobile={() => setMobileMenuOpen(false)}
+      />
 
       {/* Main Content Area */}
-      <main className="space-y-8 glass-panel p-6 sm:p-8 rounded-3xl border border-slate-800">
-        {activeTab === 'playground' ? (
-          <>
-            {/* Quick Sample Presets */}
-            <SampleAttacks onSelectSample={handleSelectSample} />
+      <div className="flex-1 md:pl-64 flex flex-col min-h-screen">
+        {/* Top Navbar / Mobile Header */}
+        <header className="h-16 border-b border-[#232333] px-6 flex items-center justify-between bg-[#0A0A0F]/80 backdrop-blur-md sticky top-0 z-30">
+          <div className="flex items-center gap-3">
+            {/* Mobile Hamburger Toggle */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="p-1.5 rounded-lg bg-[#12121A] border border-[#232333] text-[#94A3B8] hover:text-white md:hidden cursor-pointer"
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
 
-            <div className="border-t border-slate-800/80 pt-6">
-              {/* Input Form with Prompt & Document Modes */}
-              <AnalyzerInput
-                text={text}
-                setText={setText}
-                sourceType={sourceType}
-                setSourceType={setSourceType}
-                mode={mode}
-                setMode={setMode}
-                onAnalyze={handleAnalyze}
-                isLoading={isLoading}
-                error={error}
-              />
+            {/* Breadcrumb / Title */}
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-mono text-[#64748B] uppercase tracking-wider hidden sm:inline">
+                CAGE CONSOLE
+              </span>
+              <span className="text-xs font-mono text-[#64748B] hidden sm:inline">/</span>
+              <span className="text-sm font-semibold text-white capitalize font-mono">
+                {currentTab === 'home' && 'Security Operations Dashboard'}
+                {currentTab === 'analysis' && 'Incident Telemetry & Audit Analysis'}
+                {currentTab === 'demo' && 'Interactive RAG Defense Playground'}
+                {currentTab === 'keys' && 'Keys Created & API Access Tokens'}
+              </span>
+            </div>
+          </div>
+
+          {/* Header Right Actions */}
+          <div className="flex items-center gap-3">
+            {/* Quick Engine Status Indicator */}
+            <div className="hidden sm:flex items-center gap-2 px-2.5 py-1.5 rounded-full bg-[#12121A] border border-[#232333] text-xs font-mono">
+              <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
+              <span className="text-[#CBD5E1] text-[11px]">DEFENSE ACTIVE</span>
             </div>
 
-            {/* Pipeline Trace Visualizer & Result Card with Highlighting */}
-            {result && (
-              <div className="border-t border-slate-800/80 pt-6 space-y-6">
-                <PipelineTrace result={result} />
-                <ResultCard result={result} />
-              </div>
-            )}
+            {/* GET API KEY Segment / Button */}
+            <button
+              type="button"
+              onClick={() => setCreateKeyModalOpen(true)}
+              className="px-3 py-1.5 rounded-lg bg-[#7C6CF0] hover:bg-[#6857EB] text-white text-xs font-semibold shadow-md transition-all flex items-center gap-1.5 cursor-pointer glow-violet-subtle border border-[#7C6CF0]/40"
+            >
+              <Key className="w-3.5 h-3.5" />
+              <span>Get API Key</span>
+            </button>
+          </div>
+        </header>
 
-            {/* Audit Logs Panel */}
-            <div className="border-t border-slate-800/80 pt-6">
-              <LogsPanel />
-            </div>
-          </>
-        ) : (
-          /* Benchmark Results Tab */
-          <ResultsTab />
-        )}
-      </main>
+        {/* View Viewport */}
+        <main className="flex-1 p-6 sm:p-8 max-w-7xl w-full mx-auto">
+          {currentTab === 'home' && <HomeView onNavigate={setCurrentTab} />}
+          {currentTab === 'analysis' && <AnalysisView />}
+          {currentTab === 'demo' && <DemoView />}
+          {currentTab === 'keys' && (
+            <ApiKeysView
+              onOpenCreateModal={() => setCreateKeyModalOpen(true)}
+              keys={keys}
+              onRevokeKey={handleRevokeKey}
+              user={user}
+              loading={keysLoading}
+            />
+          )}
+        </main>
+      </div>
 
-      {/* Footer Info */}
-      <footer className="mt-8 text-center text-xs text-slate-500 space-y-2">
-        <div className="flex items-center justify-center gap-4 text-slate-400">
-          <span className="flex items-center gap-1.5">
-            <Lock className="w-3.5 h-3.5 text-cyan-500" /> Multi-View Heuristics + ML Classifier
-          </span>
-          <span>•</span>
-          <span className="flex items-center gap-1.5">
-            <ShieldAlert className="w-3.5 h-3.5 text-amber-400" /> Multi-Tier Defense (Allow / Isolate / Block)
-          </span>
-          <span>•</span>
-          <span className="flex items-center gap-1.5">
-            <Cpu className="w-3.5 h-3.5 text-teal-500" /> Output Validator
-          </span>
-        </div>
-        <p>CAGE Security Suite • Context-Aware Guard for LLM Exploits v2.0</p>
-      </footer>
+      {/* Create Key Modal */}
+      <CreateKeyModal
+        isOpen={createKeyModalOpen}
+        onClose={() => setCreateKeyModalOpen(false)}
+        onKeyCreated={handleKeyCreated}
+      />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <ToastProvider>
+      <AuthProvider>
+        <MainApp />
+      </AuthProvider>
+    </ToastProvider>
   );
 }

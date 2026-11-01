@@ -4,5 +4,8 @@ pydantic
 scikit-learn
 pandas
 joblib
+google-genai
 anthropic
 python-dotenv
+bcrypt
+pyjwt

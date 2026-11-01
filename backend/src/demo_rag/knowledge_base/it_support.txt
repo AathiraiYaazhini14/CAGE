@@ -1,0 +1,7 @@
+Acme Corp IT Support & Credential Self-Service Guide
+If you are locked out of your corporate account, navigate to https://idm.acme.internal to initiate automated password reset via hardware FIDO2 key or Okta Verify push.
+For new corporate laptop setup, join the 'acme-onboard' Wi-Fi network and sign in with your primary enterprise email to trigger Microsoft Intune device enrollment.
+VPN client profiles are accessible via the internal portal. Select 'acme-secure-gw.acme.internal' on port 51820 with WireGuard.
+Standard IT support tickets filed through Jira Service Management are triaged under a 4-hour SLA during standard operating hours (08:00 to 18:00 EST).
+Emergency Sev-1 production infrastructure outages should be paged directly to the incident commander using the #incident-bridge Slack channel.
+

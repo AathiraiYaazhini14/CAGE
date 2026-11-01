@@ -1,5 +1,6 @@
 import os
 os.environ.setdefault("CAGE_DETECTOR", "v1")
+os.environ.setdefault("CAGE_AUTH_REQUIRED", "false")
 
 import unittest
 from unittest.mock import patch
@@ -148,11 +149,11 @@ class TestVerificationMatrix(unittest.TestCase):
 
     def test_TC13_sqlite_audit_log_persistence(self):
         """TC-13: SQLite Audit Log Persistence | Logging Engine | POST /analyze transaction | Row committed in cage_logs.db"""
-        initial_logs = get_logs(limit=100)
+        initial_logs = get_logs(limit=1000)
         initial_count = len(initial_logs)
         res = self.client.post("/analyze", json={"text": "Audit persistence test query.", "system_prompt": "You are a bot."})
         self.assertEqual(res.status_code, 200)
-        updated_logs = get_logs(limit=100)
+        updated_logs = get_logs(limit=1000)
         self.assertEqual(len(updated_logs), initial_count + 1)
         latest_entry = updated_logs[0]
         self.assertIn("Audit persistence test query", latest_entry["input_text"])
